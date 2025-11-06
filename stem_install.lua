@@ -1,5 +1,5 @@
 -- stem_install.lua
--- S.T.E.M. installer which fetches all modules from your GitHub repository.
+-- Very simple S.T.E.M. installer from your GitHub repo.
 
 local BASE_URL = "https://raw.githubusercontent.com/SomethingBasic01/STEM/main/"
 
@@ -17,23 +17,42 @@ local FILES = {
   "stem_log.lua",
 }
 
-local function ensureHttp()
-  if not http then
-    print("S.T.E.M INSTALL: http API is disabled.")
-    print("Enable http in the CC:Tweaked / ComputerCraft config first.")
-    return false
-  end
-  return true
+if not http then
+  print("S.T.E.M INSTALL: http API is disabled.")
+  print("Enable http in the CC:Tweaked / ComputerCraft config first.")
+  return
 end
 
-local function downloadFile(name)
+for _, name in ipairs(FILES) do
   local url = BASE_URL .. name
-  print("S.T.E.M INSTALL: Downloading " .. name)
+  print("Downloading " .. name)
   print("  from " .. url)
 
   local res = http.get(url)
   if not res then
     print("  FAILED: http.get() returned nil.")
+  else
+    local data = res.readAll()
+    res.close()
+
+    if not data or data == "" then
+      print("  FAILED: empty response.")
+    else
+      local h, err = fs.open(name, "w")
+      if not h then
+        print("  FAILED: cannot open " .. name .. " for writing: " .. tostring(err))
+      else
+        h.write(data)
+        h.close()
+        print("  OK.")
+      end
+    end
+  end
+end
+
+print("")
+print("All downloads attempted. You may now run:")
+print("  stem_boot")
     return false
   end
 
