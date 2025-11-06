@@ -25,15 +25,60 @@ local CONFIG = {
     "stem_combat.lua",
     "stem_stronghold.lua",
     "stem_boot.lua",
+    "stem_log.lua",
   },
 
   -- Heartbeat & registry
-  heartbeatInterval = 5,      -- seconds between heartbeats
-  nodeTimeout       = 45,     -- seconds without heartbeat => node considered lost
-  saveInterval      = 30,     -- seconds between autosaves if state changed
+  heartbeatInterval = 5,
+  nodeTimeout       = 45,
+  saveInterval      = 30,
 
   -- Mining & navigation
   maxMiningRadius   = 64,     -- max Manhattan distance from home
+  maxDepth          = 32,     -- max depth below home Y (relative) to dig
+  refuelAt          = 200,
+  minFuelToMine     = 400,
+  fuelItems = {
+    ["minecraft:coal"]        = true,
+    ["minecraft:coal_block"]  = true,
+    ["minecraft:charcoal"]    = true,
+    ["minecraft:log"]         = true,
+    ["minecraft:log2"]        = true,
+  },
+
+  -- Hive composition / roles
+  roleRatios = {
+    miner      = 0.50,
+    hauler     = 0.15,
+    crafter    = 0.10,
+    soldier    = 0.10,
+    stronghold = 0.15,
+  },
+
+  -- Combat / soldiers
+  allowPlayerAttacks    = false,
+  soldierUnlockHiveSize = 6,
+  soldierPatrolRadius   = 16,
+  soldierChaseRadius    = 24,
+  soldierLowFuel        = 200,
+  soldierLowHealthRatio = 0.3,
+
+  -- Strongholds
+  strongholdCount         = 2,
+  strongholdHeartbeatSlow = 15,
+  strongholdWakeHiveSize  = 3,
+
+  -- Optional home area bounds (relative to home)
+  homeRegionBounds = nil,
+
+  -- Logging
+  logFile      = "/stem_data/stem.log",
+  logToConsole = true,   -- mirror important log lines to screen
+  logVerbose   = true,   -- INFO messages as well
+  logDebug     = false,  -- set true if you want very spammy debug output
+}
+
+return CONFIG
   maxDepth          = 32,     -- max depth below home Y (relative) to dig
   refuelAt          = 200,    -- if fuel falls below this, attempt refuel
   minFuelToMine     = 400,    -- refuse to go mining if fuel < this
