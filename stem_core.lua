@@ -5,15 +5,17 @@ local CONFIG   = require("stem_config")
 local stateMod = require("stem_state")
 local net      = require("stem_network")
 local roles    = require("stem_roles")
+local log      = require("stem_log")
 
 local M = {}
 
--- PUBLIC: Main entry for S.T.E.M.
--- @isFounder: boolean, true when launched as the very first node via stem_boot.
+-- Main entry for S.T.E.M.
 function M.main(isFounder)
-  print("S.T.E.M v" .. CONFIG.version ..
-        " starting on ID " .. os.getComputerID() ..
-        (isFounder and " (founder)" or ""))
+  log.info(
+    "S.T.E.M v" .. CONFIG.version ..
+    " starting (founder=" .. tostring(isFounder) ..
+    ") on ID " .. os.getComputerID()
+  )
 
   local state = stateMod.load(isFounder)
   stateMod.updateFuel(state)
@@ -21,19 +23,22 @@ function M.main(isFounder)
   roles.decideInitialRole(state)
   stateMod.save(state)
 
-  -- Main orchestration loop. Each iteration runs the appropriate role loop,
-  -- which blocks until the role is changed (e.g. by a controller).
   while true do
     roles.applyAssignedRole(state)
-    stateMod.save(state) -- ensure we persist role changes immediately
+    stateMod.save(state)
 
-    net.tick(state)      -- allow the hive to notice us quickly
+    net.tick(state)
     stateMod.updateFuel(state)
 
-    roles.runRoleLoop(state)
-
-    -- After each role loop returns, state.role may have changed; loop again.
+    local ok, err = pcall(roles.runRoleLoop, state)
+    if not ok then
+      log.error("Role loop crashed: " .. tostring(err))
+      os.sleep(2) -- pause a moment, then try again
+    end
   end
+end
+
+return M
 end
 
 return M
