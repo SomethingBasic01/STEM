@@ -53,6 +53,22 @@ end
 print("")
 print("All downloads attempted. You may now run:")
 print("  stem_boot")
+    else
+      local h, err = fs.open(name, "w")
+      if not h then
+        print("  FAILED: cannot open " .. name .. " for writing: " .. tostring(err))
+      else
+        h.write(data)
+        h.close()
+        print("  OK.")
+      end
+    end
+  end
+end
+
+print("")
+print("All downloads attempted. You may now run:")
+print("  stem_boot")
     return false
   end
 
