@@ -3,7 +3,6 @@
 
 local BASE_URL = "https://raw.githubusercontent.com/SomethingBasic01/STEM/main/"
 
--- List of S.T.E.M. files to fetch from GitHub.
 local FILES = {
   "stem.lua",
   "stem_boot.lua",
@@ -15,6 +14,7 @@ local FILES = {
   "stem_roles.lua",
   "stem_state.lua",
   "stem_stronghold.lua",
+  "stem_log.lua",
 }
 
 local function ensureHttp()
@@ -34,6 +34,50 @@ local function downloadFile(name)
   local res = http.get(url)
   if not res then
     print("  FAILED: http.get() returned nil.")
+    return false
+  end
+
+  local data = res.readAll()
+  res.close()
+
+  if not data or data == "" then
+    print("  FAILED: empty response.")
+    return false
+  end
+
+  local h, err = fs.open(name, "w")
+  if not h then
+    print("  FAILED: cannot open " .. name .. " for writing: " .. tostring(err))
+    return false
+  end
+  h.write(data)
+  h.close()
+  print("  OK.")
+  return true
+end
+
+local function main()
+  term.clear()
+  term.setCursorPos(1, 1)
+  print("S.T.E.M Installer (GitHub)")
+  print("-------------------------")
+
+  if not ensureHttp() then return end
+
+  for _, name in ipairs(FILES) do
+    if not downloadFile(name) then
+      print("S.T.E.M INSTALL: Aborting due to failure.")
+      return
+    end
+  end
+
+  print("")
+  print("All S.T.E.M. files downloaded.")
+  print("You may now run:")
+  print("  stem_boot")
+end
+
+main()
     return false
   end
 
